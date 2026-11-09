@@ -29,6 +29,7 @@ export function buildFamilyTreeGraph(
       member,
       selected: selectedId === member.id,
       dimmed: Boolean(selectedId) && !relatedToSelected.has(member.id),
+      hasParentConnection: (parentIds.get(member.id)?.size ?? 0) > 0,
       onSelect,
     },
   }));

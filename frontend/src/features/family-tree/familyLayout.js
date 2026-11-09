@@ -319,6 +319,7 @@ export function buildFamilyLayout(members, relationships) {
       type: "familyBranch",
       source: parentMemberIds[0],
       target: firstChild.id,
+      targetHandle: "top",
       data: {
         parentCenterX,
         parentCenterY,

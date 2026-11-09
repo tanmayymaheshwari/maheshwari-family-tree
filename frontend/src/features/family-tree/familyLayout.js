@@ -8,16 +8,19 @@ const GENERATION_GAP = 210;
 const PARENT_TYPES = new Set(["FATHER", "MOTHER"]);
 const SPOUSE_TYPES = new Set(["HUSBAND", "WIFE"]);
 
+// Produces a stable name used to order members and couple units.
 function getName(member) {
   return [member?.first_name, member?.last_name]
     .filter(Boolean)
     .join(" ");
 }
 
+// Removes duplicate identifiers while preserving their first occurrence.
 function unique(values) {
   return [...new Set(values)];
 }
 
+// Calculates member positions and connector definitions for the family graph.
 export function buildFamilyLayout(members, relationships) {
   const memberMap = new Map(members.map((m) => [m.id, m]));
   const parentIds = new Map(members.map((m) => [m.id, new Set()]));
@@ -51,7 +54,7 @@ export function buildFamilyLayout(members, relationships) {
     }
   }
 
-  // Create couple units, keeping the core member on the left.
+  // Creates couple units while keeping the core member on the left.
   const couples = [];
   const coupleOf = new Map();
 
@@ -100,10 +103,11 @@ export function buildFamilyLayout(members, relationships) {
 
   const coupleMap = new Map(couples.map((c) => [c.id, c]));
 
-  // Calculate biological generations.
+  // Calculates biological generations while guarding against cyclic records.
   const generation = new Map();
   const visiting = new Set();
 
+  // Resolves a member's generation from the deepest recorded parent.
   function getGeneration(id) {
     if (generation.has(id)) return generation.get(id);
     if (visiting.has(id)) return 0;
@@ -123,7 +127,7 @@ export function buildFamilyLayout(members, relationships) {
 
   members.forEach((member) => getGeneration(member.id));
 
-  // Keep spouses without recorded parents in their partner's generation.
+  // Aligns spouses without recorded parents to their partner's generation.
   for (let pass = 0; pass < members.length; pass++) {
     let changed = false;
 
@@ -160,6 +164,7 @@ export function buildFamilyLayout(members, relationships) {
     levels.get(couple.level).push(couple);
   }
 
+  // Measures the width occupied by a single-member or couple layout unit.
   const unitWidth = (couple) =>
     couple.memberIds.length * CARD_WIDTH +
     Math.max(0, couple.memberIds.length - 1) * SPOUSE_GAP;
@@ -167,6 +172,7 @@ export function buildFamilyLayout(members, relationships) {
   const positions = new Map();
 
   for (const [level, coupleList] of levels) {
+    // Sorts generation peers by parent group before their display names.
     const parentKey = (couple) => {
       const ids = new Set();
 
@@ -214,8 +220,7 @@ export function buildFamilyLayout(members, relationships) {
   const seenSpouses = new Set();
   const parentGroups = new Map();
 
-  // Group children by their actual biological parent couple(s).
-  // The child's spouse is deliberately excluded from this grouping.
+  // Groups children by biological parents while excluding each child's spouse.
   for (const member of members) {
     const parents = [...parentIds.get(member.id)];
     if (!parents.length) continue;
@@ -242,7 +247,7 @@ export function buildFamilyLayout(members, relationships) {
       group.parents.map((id) => coupleOf.get(id)).filter(Boolean)
     );
 
-    // Prefer the actual two members of a single parent couple.
+    // Uses both members of one recorded parent couple when available.
     const parentCouple =
       parentCoupleIds.length === 1
         ? coupleMap.get(parentCoupleIds[0])
@@ -262,8 +267,7 @@ export function buildFamilyLayout(members, relationships) {
     let parentCenterY;
 
     if (parentCards.length >= 2) {
-      // Midpoint of the horizontal marriage line:
-      // right edge of left card to left edge of right card.
+      // Anchors branches at the midpoint of the horizontal marriage line.
       const leftCard = parentCards.reduce((left, card) =>
         card.x < left.x ? card : left
       );
@@ -277,13 +281,12 @@ export function buildFamilyLayout(members, relationships) {
 
       parentCenterY = leftCard.y + CARD_HEIGHT / 2;
     } else {
-      // Single recorded parent: use that card's bottom-center.
+      // Anchors a single-parent branch at the card's bottom center.
       parentCenterX = parentCards[0].x + CARD_WIDTH / 2;
       parentCenterY = parentCards[0].y + CARD_HEIGHT;
     }
 
-    // IMPORTANT: use biological children only.
-    // Never use the spouse card to calculate branch width or center.
+    // Uses biological children only to calculate branch width and center.
     const childNodes = [...group.childIds]
       .map((id) => {
         const position = positions.get(id);
@@ -305,7 +308,7 @@ export function buildFamilyLayout(members, relationships) {
 
     const childTopY = Math.min(...childNodes.map((child) => child.top));
 
-    // Leave room below the parents before drawing the horizontal branch.
+    // Leaves room below parents before drawing the horizontal child branch.
     const junctionY = Math.max(
       parentCenterY + 38,
       childTopY - 38
@@ -333,7 +336,7 @@ export function buildFamilyLayout(members, relationships) {
     });
   }
 
-  // Spouse connectors remain horizontal and independent of family branches.
+  // Adds horizontal spouse connectors independently from family branches.
   for (const couple of couples) {
     if (couple.memberIds.length < 2) continue;
 

@@ -131,6 +131,9 @@
   top: 48px;
   left: 0;
   right: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 5px;
   background: #101d29;
   border: 1px solid #294553;
@@ -206,7 +209,7 @@
   position: absolute;
   z-index: 5;
   bottom: 17px;
-  left: 20px;
+  left: 60px;
   font-size: 8px;
   letter-spacing: 1px;
   pointer-events: none;
@@ -216,6 +219,8 @@
   margin: 0 8px;
   color: #4c8497;
 }
+
+/* MEMBER CARD */
 
 .member-card {
   position: relative;
@@ -256,12 +261,12 @@
 }
 
 .member-card.dimmed {
-  opacity: 0.38;
+  opacity: 0.4;
 }
 
 .member-photo {
-  width: 48px;
-  height: 58px;
+  width: 72px;
+  height: 80px;
   flex-shrink: 0;
   position: relative;
   display: flex;
@@ -304,6 +309,10 @@
 
 .member-info {
   min-width: 0;
+  margin-top: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .member-name {
@@ -313,21 +322,27 @@
   line-clamp: 2;
   overflow: hidden;
   overflow-wrap: anywhere;
-  line-height: 1.4;
+  line-height: 1.2;
+  white-space: pre-line;
 }
 
-.member-date,
-.member-age {
+.member-date {
   margin-top: 6px;
-  color: #8ca6b7;
   font-size: 9px;
   line-height: 1.4;
 }
 
 .member-age {
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.living .member-date,
+.living .member-age {
   color: #6bcbd9;
 }
 
+.deceased .member-date,
 .deceased .member-age {
   color: #b9a7ef;
 }
@@ -546,6 +561,23 @@
     max-height: 72vh;
     overflow-y: auto;
   }
+}
+
+.search-results::-webkit-scrollbar {
+  width: 6px;
+}
+
+.search-results::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.search-results::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 10px;
+}
+
+.search-results::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
 
 @media (prefers-reduced-motion: reduce) {
